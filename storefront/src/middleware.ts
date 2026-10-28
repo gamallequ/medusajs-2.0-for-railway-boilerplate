@@ -200,7 +200,10 @@ export const config = {
   // to the URL it puts in the og:image tag. Matching the path prefix handles
   // both. Verified by fetching it: without this entry the route answers 307 to
   // /gb/opengraph-image and every shared link loses its preview card.
+  //
+  // .woff2 covers the self-hosted Almarai brand font in public/fonts, which
+  // would otherwise be redirected to /<region>/fonts/... and 404.
   matcher: [
-    "/((?!api|_next/static|favicon.ico|sitemap.xml|robots.txt|opengraph-image|.*\\.png|.*\\.jpg|.*\\.gif|.*\\.svg).*)",
+    "/((?!api|_next/static|favicon.ico|sitemap.xml|robots.txt|opengraph-image|.*\\.png|.*\\.jpg|.*\\.gif|.*\\.svg|.*\\.woff2).*)",
   ],
 }

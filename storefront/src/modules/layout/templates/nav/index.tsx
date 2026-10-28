@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { Suspense } from "react"
 
 import { listRegions } from "@lib/data/regions"
@@ -23,10 +24,19 @@ export default async function Nav() {
           <div className="flex items-center h-full">
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus hover:text-ui-fg-base uppercase"
+              className="flex items-center rounded-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-equidentum"
               data-testid="nav-store-link"
             >
-              {getStoreName()}
+              <Image
+                src="/brand/equidentum-logo.png"
+                alt=""
+                width={300}
+                height={86}
+                priority
+                className="h-9 w-auto"
+              />
+              {/* The logo is the visible brand; the name stays for screen readers and tests. */}
+              <span className="sr-only">{getStoreName()}</span>
             </LocalizedClientLink>
           </div>
 

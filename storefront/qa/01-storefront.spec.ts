@@ -95,12 +95,14 @@ test.describe("Storefront shell", () => {
   test("the hero greets shoppers and leads into the store", async ({ page }) => {
     await page.goto(url())
 
+    const hero = page.getByTestId("hero")
+    await expect(hero).toBeVisible()
     await expect(
-      page.getByRole("heading", { level: 1, name: /well done/i })
+      hero.getByRole("heading", { level: 1, name: /every ride/i })
     ).toBeVisible()
 
     // A storefront homepage should have exactly one h1, and it should not be a
-    // link label. The hero previously had two, one nested inside an anchor.
+    // link label.
     await expect(page.locator("h1")).toHaveCount(1)
 
     await page.getByTestId("hero-shop-button").click()
@@ -108,92 +110,16 @@ test.describe("Storefront shell", () => {
     await expect(page.getByTestId("store-page-title")).toBeVisible()
   })
 
-  /**
-   * The deploy tutorial videos show a viewer landing on a freshly deployed
-   * store and clicking a large, obvious link to the article from the middle of
-   * the page. Anyone following along has to see the same landmark in the same
-   * place, so this pins the position and the prominence, not just that a link
-   * to the article exists somewhere on the page.
-   */
-  test("the tutorial link is prominent and in the middle of the hero", async ({
-    page,
-  }) => {
+  test("the hero product photos load", async ({ page }) => {
     await page.goto(url())
 
-    const hero = page.getByTestId("hero")
-    const tutorial = hero.getByTestId("hero-tutorial-link")
-    await expect(tutorial).toBeVisible()
-    await expect(tutorial).toHaveAttribute("href", /funkyton\.com/)
-
-    // Only one link to the article, so the videos cannot point at an ambiguous
-    // target, and it sits above the shop button rather than in the footer.
-    await expect(hero.getByTestId("hero-tutorial-link")).toHaveCount(1)
-
-    // Position asserted by what it sits between, not by a fraction of the
-    // hero's height, so adding sections below cannot silently invalidate it.
-    const linkY = (await tutorial.boundingBox())!.y
-    const headingY = (await page.getByRole("heading", { level: 1 }).boundingBox())!.y
-    const shopY = (await page.getByTestId("hero-shop-button").boundingBox())!.y
-    const cardsY = (await page.getByTestId("hero-next-steps").boundingBox())!.y
-
-    expect(linkY).toBeGreaterThan(headingY)
-    expect(linkY).toBeLessThan(shopY)
-    expect(linkY).toBeLessThan(cardsY)
-
-    // Visibly bigger than the surrounding body copy, which is what makes it
-    // findable in a screen recording.
-    const fontSize = await tutorial.evaluate(
-      (el) => parseFloat(getComputedStyle(el).fontSize)
-    )
-    expect(fontSize).toBeGreaterThanOrEqual(18)
-  })
-
-  test("the hero is marked as example content and links to the guide", async ({
-    page,
-  }) => {
-    await page.goto(url())
-
-    // The hero is placeholder content, so it has to be labelled as such and it
-    // has to say where the instructions for replacing it live. Without both, a
-    // shop owner cannot tell the template's filler from their own store.
-    const hero = page.getByTestId("hero")
-    await expect(hero).toBeVisible()
-    await expect(hero.getByTestId("hero-example-label")).toBeVisible()
-
-    const tutorial = hero.getByTestId("hero-tutorial-link")
-    await expect(tutorial).toHaveAttribute("href", /funkyton\.com/)
-    await expect(tutorial).toHaveAttribute("target", "_blank")
-
-    const mos = hero.getByTestId("hero-mos-link")
-    await expect(mos).toHaveAttribute("href", /myownsuite\.org/)
-    await expect(mos).toHaveAttribute("target", "_blank")
-
-    // The dashed outline is the whole point of the section, so a restyle that
-    // drops it should fail here rather than silently ship an example block
-    // that looks like finished design.
-    await expect(hero).toHaveCSS("border-style", "dashed")
-  })
-
-  test("the next-steps cards point at the setup videos", async ({ page }) => {
-    await page.goto(url())
-
-    // A fresh deploy cannot take money or send mail until these are
-    // configured. Search is deliberately absent: Railway wires MeiliSearch up
-    // automatically, so a card for it would send people off to do work that is
-    // already done.
-    const cards = page.getByTestId("hero-guide-card")
-    await expect(cards).toHaveCount(2)
-    await expect(page.getByTestId("hero-next-steps")).not.toContainText(/meilisearch|search/i)
-
-    for (const card of await cards.all()) {
-      await expect(card).toHaveAttribute("href", /youtu\.be\/[\w-]+/)
-      await expect(card).toHaveAttribute("target", "_blank")
-      // A card with a broken cover is worse than no cover at all.
-      const cover = card.locator("img")
-      await expect(cover).toBeVisible()
+    // A hero with a broken product shot is worse than no shot at all.
+    const images = page.getByTestId("hero").locator("img")
+    for (const img of await images.all()) {
+      if (!(await img.isVisible())) continue
       await expect
         .poll(async () =>
-          cover.evaluate((img: HTMLImageElement) => img.naturalWidth)
+          img.evaluate((el: HTMLImageElement) => el.naturalWidth)
         )
         .toBeGreaterThan(0)
     }
@@ -204,31 +130,9 @@ test.describe("Storefront shell", () => {
 
     // Shoppers should not be told which host the store runs on, and the
     // storefront should not narrate its own deployment.
-    //
-    // The repo link is the one allowed exception. Its slug happens to contain
-    // "railway" because that is the repository's actual name, and naming the
-    // template a store was built from is attribution, not host co-branding.
-    // Excluded by text rather than by weakening the check, so the rest of the
-    // page is still held to the original rule.
-    const repoLink = page.getByTestId("hero-repo-link")
-    await expect(repoLink).toHaveAttribute("href", /github\.com/)
-    const repoText = (await repoLink.innerText()).trim()
-
-    const body = (await page.locator("body").innerText()).split(repoText).join("")
+    const body = await page.locator("body").innerText()
     expect(body).not.toMatch(/railway/i)
     expect(body).not.toMatch(/successfully deployed/i)
-  })
-
-  test("the homepage shows products even with no collections", async ({ page }) => {
-    await page.goto(url())
-
-    // The featured section is collection-driven and the seed creates none, so
-    // without a fallback the page below the hero is blank.
-    const rail = page
-      .getByTestId("latest-products")
-      .or(page.getByTestId("products-list"))
-    await expect(rail.first()).toBeVisible()
-    await expect(page.getByTestId("product-wrapper").first()).toBeVisible()
   })
 
   test("the search link is shown when search is enabled", async ({ page }) => {

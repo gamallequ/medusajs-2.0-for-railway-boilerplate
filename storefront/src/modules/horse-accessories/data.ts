@@ -23,11 +23,33 @@ export type HorseCategory = {
   image: string
 }
 
-export const HERO_IMAGES = {
-  primary: decathlonImage("d86713d5-460f-4e8b-81e2-c18affbd6098"),
-  secondary: decathlonImage("c43a30b1-73d2-4a41-b8ad-877c515eafcb"),
-  tertiary: decathlonImage("accab1a4-9acd-435f-a1c9-ec138cc73e08"),
+export const HERO_PRODUCTS: {
+  primary: HorseAccessory
+  secondary: HorseAccessory
+  tertiary: HorseAccessory
+} = {
+  primary: {
+    title: "Riding Helmet 140",
+    category: "Helmets",
+    image: decathlonImage("d86713d5-460f-4e8b-81e2-c18affbd6098"),
+  },
+  secondary: {
+    title: "Leather Jodhpur Boots 560",
+    category: "Boots",
+    image: decathlonImage("c43a30b1-73d2-4a41-b8ad-877c515eafcb"),
+  },
+  tertiary: {
+    title: "Leather Riding Gloves",
+    category: "Gloves",
+    image: decathlonImage("accab1a4-9acd-435f-a1c9-ec138cc73e08"),
+  },
 }
+
+export const HERO_HIGHLIGHTS = [
+  "Certified safety helmets",
+  "Adult and kids' sizes",
+  "Secure checkout",
+]
 
 export const CATEGORIES: HorseCategory[] = [
   {
@@ -54,9 +76,9 @@ export const CATEGORIES: HorseCategory[] = [
 
 export const FEATURED: HorseAccessory[] = [
   {
-    title: "Horse Riding Helmet 140 - Black Velvet",
+    title: "Horse Riding Helmet 100 - Black",
     category: "Helmets",
-    image: decathlonImage("d86713d5-460f-4e8b-81e2-c18affbd6098"),
+    image: decathlonImage("17457ff0-08b2-4207-bc9f-c46b764017ec"),
   },
   {
     title: "Leather Jodhpur Boots 560 - Black",

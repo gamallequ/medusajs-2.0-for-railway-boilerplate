@@ -19,6 +19,17 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
+        // Equidentum brand, taken from equidentum-front (tailwind.config.js
+        // and the landing-motion tokens) so the shop matches the dashboard.
+        equidentum: {
+          DEFAULT: "#441752",
+          deep: "#4a1354",
+          brand: "#6e4276",
+          mist: "#ede7ee",
+          gold: "#c69d6d",
+          ink: "#2a2a2a",
+          slate: "#565656",
+        },
         grey: {
           0: "#FFFFFF",
           5: "#F9FAFB",
@@ -58,6 +69,7 @@ module.exports = {
       },
       fontFamily: {
         sans: [
+          "Almarai",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
