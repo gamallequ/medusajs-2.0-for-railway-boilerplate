@@ -47,14 +47,37 @@ export const getCacheTag = async (tag: string): Promise<string> => {
  * every route that reads data through this at build time was kicked out of
  * static rendering with DYNAMIC_SERVER_USAGE. Saying nothing gets the same
  * safety without opting the whole storefront out of prerendering.
+ *
+ * Catalog reads also carry a shared `catalog-<tag>` tag and a TTL. The
+ * per-visitor tag alone made admin edits invisible: a deleted product stayed
+ * in every visitor's cached list until a redeploy, because nothing outside
+ * that visitor's own session could name their tag. The shared tag is what the
+ * backend's catalog-changed subscriber purges through /api/revalidate, and
+ * the TTL bounds staleness when that call is not configured or fails.
  */
+export const CATALOG_TAGS = ["products", "categories", "collections", "regions"]
+export const CATALOG_REVALIDATE_SECONDS = 60
+
 export const getCacheDirectives = async (
   tag: string
-): Promise<{} | { cache: "force-cache"; next: { tags: string[] } }> => {
+): Promise<
+  | {}
+  | { cache: "force-cache"; next: { tags: string[]; revalidate?: number } }
+> => {
   const cacheTag = await getCacheTag(tag)
 
   if (!cacheTag) {
     return {}
+  }
+
+  if (CATALOG_TAGS.includes(tag)) {
+    return {
+      cache: "force-cache",
+      next: {
+        tags: [cacheTag, `catalog-${tag}`],
+        revalidate: CATALOG_REVALIDATE_SECONDS,
+      },
+    }
   }
 
   return { cache: "force-cache", next: { tags: [cacheTag] } }

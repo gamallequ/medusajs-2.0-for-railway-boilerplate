@@ -74,6 +74,14 @@ export const STOREFRONT_URL = (
 ).replace(/\/+$/, '')
 
 /**
+ * Shared secret for the storefront's /api/revalidate endpoint. When set, the
+ * catalog-changed subscriber purges the storefront's product and category
+ * cache right after an admin edit. When unset the call is skipped and the
+ * storefront's own 60s cache TTL is the only refresh.
+ */
+export const REVALIDATE_SECRET = process.env.REVALIDATE_SECRET
+
+/**
  * JWT Secret used for signing JWT tokens
  */
 export const JWT_SECRET = assertValue(
